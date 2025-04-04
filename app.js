@@ -29,3 +29,23 @@ fs.createReadStream(inputFile)
 });
 -----------------------------------------------------------------
 */
+
+const inputFile = 'input.csv';
+const outputFile = 'output.sql'
+const tableName = 'table'
+
+const results = [];
+
+fs.createReadStream(inputFile)
+    .pipe(csvParser())
+    .on('data', (data) => results.push(data))
+    .on('end', () => {
+    
+    const headers = Object.keys(results[0]);
+    const statements = results.map(row => {
+        const values = headers.map(h => `'${(row[h] || '').replace(/'/g, "''")}'`); 
+        return `INSERT INTO ${tableName} (${headers.join(', ')}) VALUES (${values.join(', ')});`;
+    })
+
+    fs.writeFileSync(outputFile, statements.join('\n'), 'utf-8');
+    });
