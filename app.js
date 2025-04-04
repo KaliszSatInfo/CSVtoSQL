@@ -31,8 +31,8 @@ fs.createReadStream(inputFile)
 */
 
 const inputFile = 'input.csv';
-const outputFile = 'output.sql'
-const tableName = 'table'
+const outputFile = 'output.sql';
+const tableName = 'brothers';
 
 const results = [];
 
@@ -43,9 +43,16 @@ fs.createReadStream(inputFile)
     
     const headers = Object.keys(results[0]);
     const statements = results.map(row => {
-        const values = headers.map(h => `'${(row[h] || '').replace(/'/g, "''")}'`); 
+        const values = headers.map(h => `'${(row[h] || '').replace(/'/g, "''")}'`);
         return `INSERT INTO ${tableName} (${headers.join(', ')}) VALUES (${values.join(', ')});`;
-    })
-
-    fs.writeFileSync(outputFile, statements.join('\n'), 'utf-8');
     });
+
+    const stats = fs.statSync(outputFile);
+    alreadyEntry = stats.size > 0;
+
+    if (alreadyEntry) {
+        fs.appendFileSync(outputFile, '\n' + statements.join('\n'), 'utf-8');
+    } else {
+        fs.writeFileSync(outputFile, statements.join('\n'), 'utf-8');
+    }
+});
