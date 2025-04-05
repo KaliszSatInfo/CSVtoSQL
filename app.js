@@ -13,7 +13,6 @@ rl.question('Table name: ', (tableName) => {
 rl.question('Separator (e.g. "," or ";"): ', (separator) => {
 rl.close();
 
-
 const results = [];
 
 fs.createReadStream(inputFile)
@@ -23,13 +22,13 @@ fs.createReadStream(inputFile)
 
     const headers = Object.keys(results[0]);
     const statements = results.map(row => {
-      const values = headers.map(h => `'${(row[h] || '').replace(/'/g, "''")}'`);
-      return `INSERT INTO ${tableName} (${headers.join(', ')}) VALUES (${values.join(', ')});`;
+        const values = headers.map(h => `'${(row[h] || '').replace(/'/g, "''")}'`);
+        return `INSERT INTO ${tableName} (${headers.join(', ')}) VALUES (${values.join(', ')});`;
     });
 
     const stats = fs.statSync(outputFile);
     alreadyEntry = stats.size > 0;
-    
+
     if (alreadyEntry) {
         fs.appendFileSync(outputFile, '\n' + statements.join('\n'), 'utf-8');
     } else {
