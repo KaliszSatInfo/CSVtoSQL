@@ -1,42 +1,45 @@
-var fs = require('fs');
-var readline = require('readline');
-var csvParser = require('csv-parser');
+let uploadedFile = null;
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
+document.getElementById('csvFileInput').addEventListener('change', function(e) {
+  uploadedFile = e.target.files[0];
+  document.getElementById('fileName').textContent = uploadedFile ? uploadedFile.name : 'None';
+  document.getElementById('status').textContent = uploadedFile && uploadedFile.name.endsWith('.csv') ? '' : 'Please select a valid CSV file.';
 });
 
-const askQuestion = (query) =>
-    new Promise((resolve) => rl.question(query, resolve));
+document.getElementById('csvForm').addEventListener('submit', function(e) {
+  e.preventDefault();
   
-  (async () => {
-      const inputFile = await askQuestion('Input file: ');
-      const outputFile = await askQuestion('Output file: ');
-      const tableName = await askQuestion('Table name: ');
-      const separator = await askQuestion('Separator (e.g. "," or ";"): ');
-      rl.close();
+  if (!uploadedFile) return alert("Please upload a CSV file.");
+  
+  const tableName = document.getElementById('tableName').value;
 
-const results = [];
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    const csvContent = event.target.result;
+    const separator = getSeparator(csvContent);
+    const sql = convertCSVToSQL(csvContent, tableName, separator);
+    document.getElementById('sqlOutput').value = sql;
+    document.getElementById('status').textContent = 'SQL generated successfully!';
+  };
+  reader.readAsText(uploadedFile);
+});
 
-fs.createReadStream(inputFile)
-  .pipe(csvParser({ separator }))
-  .on('data', (data) => results.push(data))
-  .on('end', () => {
+function getSeparator(csvContent) {
+  const separators = [',', ';', '\t', '|'];
+  return separators.find(sep => csvContent.split(sep).length > 1) || ',';
+}
 
-    const headers = Object.keys(results[0]);
-    const statements = results.map(row => {
-        const values = headers.map(h => `'${(row[h] || '').replace(/'/g, "''")}'`);
-        return `INSERT INTO ${tableName} (${headers.join(', ')}) VALUES (${values.join(', ')});`;
-    });
+function convertCSVToSQL(csvContent, tableName, separator) {
+  const rows = csvContent.split('\n').map(row => row.split(separator).map(cell => cell.trim()));
+  const headers = rows[0];
+  return rows.slice(1).map(row => {
+    const values = row.map(val => `'${val.replace(/'/g, "''")}'`).join(', ');
+    return `INSERT INTO ${tableName} (${headers.join(', ')}) VALUES (${values});`;
+  }).join('\n');
+}
 
-    const alreadyEntry = fs.existsSync(outputFile) && fs.statSync(outputFile).size > 0;
-
-
-    if (alreadyEntry) {
-        fs.appendFileSync(outputFile, '\n' + statements.join('\n'), 'utf-8');
-    } else {
-        fs.writeFileSync(outputFile, statements.join('\n'), 'utf-8');
-    }
-    });
-})();
+document.getElementById('copyButton').addEventListener('click', function() {
+  const sqlOutput = document.getElementById('sqlOutput');
+  sqlOutput.select();
+  document.execCommand('copy');
+});

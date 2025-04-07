@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSV to SQL Converter</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+</head>
+<body>
+  <div class="container">
+    <h1 class="text-center mt-4">CSV to SQL Converter</h1>
+    
+    <div id="file-info" class="mt-4">
+      <p>File selected: <span id="fileName">None</span></p>
+      <input type="file" id="csvFileInput" accept=".csv" class="form-control" />
+    </div>
+    
+    <form id="csvForm" class="mt-4">
+      <div class="mb-3">
+        <label for="tableName" class="form-label">Table name:</label>
+        <input type="text" id="tableName" class="form-control" required />
+      </div>
+      <button type="submit" class="btn btn-primary">Generate SQL</button>
+    </form>
+
+    <div id="output-section" class="mt-4" style="position: relative;">
+      <textarea id="sqlOutput" rows="15" class="form-control" readonly></textarea>
+      <button id="copyButton" class="btn btn-secondary" style="position: absolute; top: 10px; right: 10px;">Copy SQL</button>
+    </div>
+
+    <p id="status" class="text-center mt-4"></p>
+  </div>
+  
+  <script src="app.js"></script>
+</body>
+</html>
