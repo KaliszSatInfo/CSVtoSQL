@@ -1,0 +1,6 @@
+@if (sql$ | async; as sql) {
+  <textarea [value]="sql" readonly rows="20" cols="80"></textarea>
+  <button (click)="copySQL()">Copy SQL</button>
+} @else {
+  <p>No SQL generated yet.</p>
+}
